@@ -27,20 +27,40 @@ public class PlayerAttack : MonoBehaviour
 
     private void Attack()
     {
+        int fireballIndex = FindFireball();
+        if (fireballIndex < 0 || firePoint == null)
+            return;
+
+        GameObject fireball = fireballs[fireballIndex];
+        if (fireball == null)
+            return;
+
         SoundManager.instance.PlaySound(fireballSound);
         anim.SetTrigger("attack");
         cooldownTimer = 0;
 
-        fireballs[FindFireball()].transform.position = firePoint.position;
-        fireballs[FindFireball()].GetComponent<Projectile>().SetDirection(Mathf.Sign(transform.localScale.x));
+        fireball.transform.position = firePoint.position;
+        Projectile projectile = fireball.GetComponent<Projectile>();
+        if (projectile == null)
+        {
+            Debug.LogWarning("Fireball prefab is missing the Projectile component.", fireball);
+            fireball.SetActive(false);
+            return;
+        }
+
+        projectile.SetDirection(Mathf.Sign(transform.localScale.x));
     }
+
     private int FindFireball()
     {
+        if (fireballs == null)
+            return -1;
+
         for (int i = 0; i < fireballs.Length; i++)
         {
-            if (!fireballs[i].activeInHierarchy)
+            if (fireballs[i] != null && !fireballs[i].activeInHierarchy)
                 return i;
         }
-        return 0;
+        return -1;
     }
 }
